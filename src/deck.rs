@@ -1,7 +1,7 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Suit {
     Spades,
     Hearts,
@@ -17,25 +17,24 @@ impl Suit {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CardValue {
-    Ace,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-    Eight,
-    Nine,
-    Ten,
-    Jack,
-    Queen,
-    King,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+    Six = 6,
+    Seven = 7,
+    Eight = 8,
+    Nine = 9,
+    Ten = 10,
+    Jack = 11,
+    Queen = 12,
+    King = 13,
+    Ace = 14,
 }
 
 const CARD_VALUES: [CardValue; 13] = [
-    CardValue::Ace,
     CardValue::Two,
     CardValue::Three,
     CardValue::Four,
@@ -48,6 +47,7 @@ const CARD_VALUES: [CardValue; 13] = [
     CardValue::Jack,
     CardValue::Queen,
     CardValue::King,
+    CardValue::Ace,
 ];
 
 impl CardValue {
@@ -56,7 +56,7 @@ impl CardValue {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Card {
     value: CardValue,
     suit: Suit,
@@ -66,9 +66,17 @@ impl Card {
     pub fn new(value: CardValue, suit: Suit) -> Self {
         Self { value, suit }
     }
+
+    pub fn get_value(&self) -> CardValue {
+        self.value
+    }
+
+    pub fn get_suit(&self) -> Suit {
+        self.suit
+    }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Deck {
     deck: Vec<Card>,
 }
