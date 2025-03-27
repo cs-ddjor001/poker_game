@@ -1,12 +1,12 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
 pub enum Suit {
-    Spades,
     Hearts,
     Diamonds,
     Clubs,
+    Spades,
 }
 
 const SUITS: [Suit; 4] = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
@@ -17,8 +17,8 @@ impl Suit {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum CardValue {
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
+pub enum Rank {
     Two = 2,
     Three = 3,
     Four = 4,
@@ -34,40 +34,40 @@ pub enum CardValue {
     Ace = 14,
 }
 
-const CARD_VALUES: [CardValue; 13] = [
-    CardValue::Two,
-    CardValue::Three,
-    CardValue::Four,
-    CardValue::Five,
-    CardValue::Six,
-    CardValue::Seven,
-    CardValue::Eight,
-    CardValue::Nine,
-    CardValue::Ten,
-    CardValue::Jack,
-    CardValue::Queen,
-    CardValue::King,
-    CardValue::Ace,
+const CARD_VALUES: [Rank; 13] = [
+    Rank::Two,
+    Rank::Three,
+    Rank::Four,
+    Rank::Five,
+    Rank::Six,
+    Rank::Seven,
+    Rank::Eight,
+    Rank::Nine,
+    Rank::Ten,
+    Rank::Jack,
+    Rank::Queen,
+    Rank::King,
+    Rank::Ace,
 ];
 
-impl CardValue {
+impl Rank {
     pub fn values() -> &'static [Self] {
         &CARD_VALUES
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
-    value: CardValue,
+    value: Rank,
     suit: Suit,
 }
 
 impl Card {
-    pub fn new(value: CardValue, suit: Suit) -> Self {
+    pub fn new(value: Rank, suit: Suit) -> Self {
         Self { value, suit }
     }
 
-    pub fn get_value(&self) -> CardValue {
+    pub fn get_value(&self) -> Rank {
         self.value
     }
 
@@ -76,7 +76,7 @@ impl Card {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Deck {
     deck: Vec<Card>,
 }
@@ -86,7 +86,7 @@ impl Deck {
         let deck = Suit::values()
             .iter()
             .flat_map(|&suit| {
-                CardValue::values()
+                Rank::values()
                     .iter()
                     .map(move |&value| Card::new(value, suit))
             })
@@ -108,6 +108,14 @@ impl Deck {
     pub fn remaining_cards(&self) -> usize {
         self.deck.len()
     }
+
+    pub fn deal(&mut self, count: usize) -> Result<Vec<Card>, &'static str> {
+        if count > self.deck.len() {
+            Err("Not enough cards in the deck")
+        } else {
+            Ok(self.deck.split_off(self.deck.len() - count))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -117,11 +125,11 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new(CardValue::Ace, Suit::Spades);
-        assert_that!(card.value, equal_to(CardValue::Ace));
+        let card = Card::new(Rank::Ace, Suit::Spades);
+        assert_that!(card.value, equal_to(Rank::Ace));
         assert_that!(card.suit, equal_to(Suit::Spades));
-        let card2 = Card::new(CardValue::King, Suit::Hearts);
-        assert_that!(card2.value, equal_to(CardValue::King));
+        let card2 = Card::new(Rank::King, Suit::Hearts);
+        assert_that!(card2.value, equal_to(Rank::King));
         assert_that!(card2.suit, equal_to(Suit::Hearts));
         assert_that!(card, not(equal_to(card2)));
     }

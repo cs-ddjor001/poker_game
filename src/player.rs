@@ -68,8 +68,8 @@ mod tests {
         assert_that!(player.is_small_blind, equal_to(false));
         assert_that!(player.is_big_blind, equal_to(false));
         assert_that!(player.hand.len(), equal_to(0));
-        let card1 = Card::new(crate::deck::CardValue::Queen, crate::deck::Suit::Clubs);
-        let card2 = Card::new(crate::deck::CardValue::Jack, crate::deck::Suit::Hearts);
+        let card1 = Card::new(crate::deck::Rank::Queen, crate::deck::Suit::Clubs);
+        let card2 = Card::new(crate::deck::Rank::Jack, crate::deck::Suit::Hearts);
         player.recieve_card(card1);
         player.recieve_card(card2);
         assert_that!(player.hand.is_empty(), is(false));

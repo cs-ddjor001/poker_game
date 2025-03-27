@@ -1,16 +1,16 @@
-use crate::deck::{Card, CardValue, Suit};
+use crate::deck::{Card, Rank, Suit};
 use std::collections::HashMap;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, PartialOrd, Ord)]
 pub enum Tier {
-    HighCard(CardValue),
-    OnePair(CardValue),
-    TwoPair(CardValue, CardValue),
-    ThreeOfAKind(CardValue),
-    Straight(CardValue, CardValue, CardValue, CardValue, CardValue),
+    HighCard(Rank),
+    OnePair(Rank),
+    TwoPair(Rank, Rank),
+    ThreeOfAKind(Rank),
+    Straight(Rank, Rank, Rank, Rank, Rank),
     Flush(Suit),
-    FullHouse(CardValue, CardValue),
-    FourOfAKind(CardValue),
+    FullHouse(Rank, Rank),
+    FourOfAKind(Rank),
     StraightFlush(Card, Card, Card, Card, Card),
     RoyalFlush(Card, Card, Card, Card, Card),
 }
@@ -20,12 +20,12 @@ impl Tier {
         let mut card_counts = HashMap::new();
         let mut suit_counts = HashMap::new();
 
-        let low_ace_straight: [CardValue; 5] = [
-            CardValue::Two,
-            CardValue::Three,
-            CardValue::Four,
-            CardValue::Five,
-            CardValue::Ace,
+        let low_ace_straight: [Rank; 5] = [
+            Rank::Two,
+            Rank::Three,
+            Rank::Four,
+            Rank::Five,
+            Rank::Ace,
         ];
 
         for card in hand.iter() {
@@ -33,9 +33,9 @@ impl Tier {
             *suit_counts.entry(card.get_suit()).or_insert(0) += 1;
         }
 
-        let mut pairs: Vec<CardValue> = Vec::with_capacity(2);
-        let mut trips: Option<CardValue> = None;
-        let mut quads: Option<CardValue> = None;
+        let mut pairs: Vec<Rank> = Vec::with_capacity(2);
+        let mut trips: Option<Rank> = None;
+        let mut quads: Option<Rank> = None;
 
         for (&card_value, &count) in &card_counts {
             match count {
@@ -68,7 +68,7 @@ impl Tier {
 
         if card_counts.len() == 5 && suit_counts.len() == 1 {
             let suits: Vec<Suit> = suit_counts.keys().cloned().collect();
-            let mut card_values: Vec<CardValue> = card_counts.keys().cloned().collect();
+            let mut card_values: Vec<Rank> = card_counts.keys().cloned().collect();
             card_values.sort();
 
             let mut cards: Vec<Card> = vec![
@@ -82,19 +82,19 @@ impl Tier {
             cards.sort();
 
             let royal_flush: [Card; 5] = [
-                Card::new(CardValue::Ten, suits[0]),
-                Card::new(CardValue::Jack, suits[0]),
-                Card::new(CardValue::Queen, suits[0]),
-                Card::new(CardValue::King, suits[0]),
-                Card::new(CardValue::Ace, suits[0]),
+                Card::new(Rank::Ten, suits[0]),
+                Card::new(Rank::Jack, suits[0]),
+                Card::new(Rank::Queen, suits[0]),
+                Card::new(Rank::King, suits[0]),
+                Card::new(Rank::Ace, suits[0]),
             ];
 
             let low_ace_straight_flush: [Card; 5] = [
-                Card::new(CardValue::Two, suits[0]),
-                Card::new(CardValue::Three, suits[0]),
-                Card::new(CardValue::Four, suits[0]),
-                Card::new(CardValue::Five, suits[0]),
-                Card::new(CardValue::Ace, suits[0]),
+                Card::new(Rank::Two, suits[0]),
+                Card::new(Rank::Three, suits[0]),
+                Card::new(Rank::Four, suits[0]),
+                Card::new(Rank::Five, suits[0]),
+                Card::new(Rank::Ace, suits[0]),
             ];
 
             if cards == low_ace_straight_flush {
@@ -111,16 +111,16 @@ impl Tier {
         }
 
         if card_counts.len() == 5 {
-            let mut cards: Vec<CardValue> = card_counts.keys().cloned().collect();
+            let mut cards: Vec<Rank> = card_counts.keys().cloned().collect();
             cards.sort();
 
             if cards == low_ace_straight {
                 return Tier::Straight(
-                    CardValue::Ace,
-                    CardValue::Two,
-                    CardValue::Three,
-                    CardValue::Four,
-                    CardValue::Five,
+                    Rank::Ace,
+                    Rank::Two,
+                    Rank::Three,
+                    Rank::Four,
+                    Rank::Five,
                 );
             }
             if cards[4] as u8 - cards[0] as u8 == 4 {
@@ -134,7 +134,7 @@ impl Tier {
             return Tier::Flush(suits[0]);
         }
 
-        let mut card_values: Vec<CardValue> = card_counts.keys().cloned().collect();
+        let mut card_values: Vec<Rank> = card_counts.keys().cloned().collect();
         card_values.sort();
         return Tier::HighCard(card_values[card_values.len() - 1]);
     }
@@ -148,131 +148,131 @@ mod tests {
     #[test]
     fn test_high_card() {
         let ace_high: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::Jack, Suit::Spades),
-            Card::new(CardValue::Four, Suit::Diamonds),
-            Card::new(CardValue::Eight, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::Jack, Suit::Spades),
+            Card::new(Rank::Four, Suit::Diamonds),
+            Card::new(Rank::Eight, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
         let ten_high: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Clubs),
-            Card::new(CardValue::Five, Suit::Hearts),
-            Card::new(CardValue::Ten, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::Seven, Suit::Hearts),
+            Card::new(Rank::Two, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::Seven, Suit::Hearts),
         ]);
 
         let jack_high: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Clubs),
-            Card::new(CardValue::Five, Suit::Hearts),
-            Card::new(CardValue::Ten, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::Jack, Suit::Hearts),
+            Card::new(Rank::Two, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::Jack, Suit::Hearts),
         ]);
 
         let king_high: Tier = Tier::based_on([
-            Card::new(CardValue::Nine, Suit::Clubs),
-            Card::new(CardValue::Seven, Suit::Hearts),
-            Card::new(CardValue::Jack, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Diamonds),
-            Card::new(CardValue::Four, Suit::Hearts),
+            Card::new(Rank::Nine, Suit::Clubs),
+            Card::new(Rank::Seven, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Diamonds),
+            Card::new(Rank::Four, Suit::Hearts),
         ]);
 
-        assert_that!(ace_high, is(equal_to(Tier::HighCard(CardValue::Ace))));
-        assert_that!(ten_high, is(equal_to(Tier::HighCard(CardValue::Ten))));
-        assert_that!(jack_high, is(equal_to(Tier::HighCard(CardValue::Jack))));
-        assert_that!(king_high, is(equal_to(Tier::HighCard(CardValue::King))));
+        assert_that!(ace_high, is(equal_to(Tier::HighCard(Rank::Ace))));
+        assert_that!(ten_high, is(equal_to(Tier::HighCard(Rank::Ten))));
+        assert_that!(jack_high, is(equal_to(Tier::HighCard(Rank::Jack))));
+        assert_that!(king_high, is(equal_to(Tier::HighCard(Rank::King))));
     }
 
     #[test]
     fn test_one_pair() {
         let ace_pair: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Four, Suit::Diamonds),
-            Card::new(CardValue::Eight, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Four, Suit::Diamonds),
+            Card::new(Rank::Eight, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
         let ten_pair: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Clubs),
-            Card::new(CardValue::Five, Suit::Hearts),
-            Card::new(CardValue::Ten, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::Ten, Suit::Hearts),
+            Card::new(Rank::Two, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::Ten, Suit::Hearts),
         ]);
 
-        assert_that!(ace_pair, is(equal_to(Tier::OnePair(CardValue::Ace))));
-        assert_that!(ten_pair, is(equal_to(Tier::OnePair(CardValue::Ten))));
+        assert_that!(ace_pair, is(equal_to(Tier::OnePair(Rank::Ace))));
+        assert_that!(ten_pair, is(equal_to(Tier::OnePair(Rank::Ten))));
     }
 
     #[test]
     fn test_two_pair() {
         let ace_ten_two_pair: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Ten, Suit::Diamonds),
-            Card::new(CardValue::Ten, Suit::Clubs),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Ten, Suit::Diamonds),
+            Card::new(Rank::Ten, Suit::Clubs),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
         assert_that!(
             ace_ten_two_pair,
-            is(equal_to(Tier::TwoPair(CardValue::Ten, CardValue::Ace)))
+            is(equal_to(Tier::TwoPair(Rank::Ten, Rank::Ace)))
         );
     }
 
     #[test]
     fn test_three_of_a_kind() {
         let three_aces: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Ace, Suit::Hearts),
-            Card::new(CardValue::Eight, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Ace, Suit::Hearts),
+            Card::new(Rank::Eight, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
-        assert_that!(three_aces, is(equal_to(Tier::ThreeOfAKind(CardValue::Ace))));
+        assert_that!(three_aces, is(equal_to(Tier::ThreeOfAKind(Rank::Ace))));
     }
 
     #[test]
     fn test_straight() {
         let straight: Tier = Tier::based_on([
-            Card::new(CardValue::Six, Suit::Clubs),
-            Card::new(CardValue::Seven, Suit::Spades),
-            Card::new(CardValue::Ten, Suit::Hearts),
-            Card::new(CardValue::Eight, Suit::Diamonds),
-            Card::new(CardValue::Nine, Suit::Hearts),
+            Card::new(Rank::Six, Suit::Clubs),
+            Card::new(Rank::Seven, Suit::Spades),
+            Card::new(Rank::Ten, Suit::Hearts),
+            Card::new(Rank::Eight, Suit::Diamonds),
+            Card::new(Rank::Nine, Suit::Hearts),
         ]);
 
         let straight2: Tier = Tier::based_on([
-            Card::new(CardValue::Ten, Suit::Clubs),
-            Card::new(CardValue::Queen, Suit::Spades),
-            Card::new(CardValue::Ace, Suit::Hearts),
-            Card::new(CardValue::Jack, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Clubs),
+            Card::new(Rank::Queen, Suit::Spades),
+            Card::new(Rank::Ace, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
         assert_that!(
             straight,
             equal_to(Tier::Straight(
-                CardValue::Six,
-                CardValue::Seven,
-                CardValue::Eight,
-                CardValue::Nine,
-                CardValue::Ten
+                Rank::Six,
+                Rank::Seven,
+                Rank::Eight,
+                Rank::Nine,
+                Rank::Ten
             ))
         );
 
         assert_that!(
             straight2,
             equal_to(Tier::Straight(
-                CardValue::Ten,
-                CardValue::Jack,
-                CardValue::Queen,
-                CardValue::King,
-                CardValue::Ace
+                Rank::Ten,
+                Rank::Jack,
+                Rank::Queen,
+                Rank::King,
+                Rank::Ace
             ))
         );
     }
@@ -280,21 +280,21 @@ mod tests {
     #[test]
     fn test_ace_low_straight() {
         let ace_low_straight: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Clubs),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Five, Suit::Hearts),
-            Card::new(CardValue::Four, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Hearts),
+            Card::new(Rank::Two, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Five, Suit::Hearts),
+            Card::new(Rank::Four, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Hearts),
         ]);
 
         assert_that!(
             ace_low_straight,
             equal_to(Tier::Straight(
-                CardValue::Ace,
-                CardValue::Two,
-                CardValue::Three,
-                CardValue::Four,
-                CardValue::Five
+                Rank::Ace,
+                Rank::Two,
+                Rank::Three,
+                Rank::Four,
+                Rank::Five
             ))
         );
     }
@@ -302,35 +302,35 @@ mod tests {
     #[test]
     fn test_flush() {
         let flush1: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Hearts),
-            Card::new(CardValue::King, Suit::Hearts),
-            Card::new(CardValue::Nine, Suit::Hearts),
-            Card::new(CardValue::Five, Suit::Hearts),
-            Card::new(CardValue::Jack, Suit::Hearts),
+            Card::new(Rank::Two, Suit::Hearts),
+            Card::new(Rank::King, Suit::Hearts),
+            Card::new(Rank::Nine, Suit::Hearts),
+            Card::new(Rank::Five, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Hearts),
         ]);
 
         let flush2: Tier = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Diamonds),
-            Card::new(CardValue::Eight, Suit::Diamonds),
-            Card::new(CardValue::Five, Suit::Diamonds),
-            Card::new(CardValue::Jack, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Diamonds),
+            Card::new(Rank::Eight, Suit::Diamonds),
+            Card::new(Rank::Five, Suit::Diamonds),
+            Card::new(Rank::Jack, Suit::Diamonds),
         ]);
 
         let flush3: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Four, Suit::Spades),
-            Card::new(CardValue::Jack, Suit::Spades),
-            Card::new(CardValue::Nine, Suit::Spades),
-            Card::new(CardValue::Queen, Suit::Spades),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Four, Suit::Spades),
+            Card::new(Rank::Jack, Suit::Spades),
+            Card::new(Rank::Nine, Suit::Spades),
+            Card::new(Rank::Queen, Suit::Spades),
         ]);
 
         let flush4: Tier = Tier::based_on([
-            Card::new(CardValue::Two, Suit::Clubs),
-            Card::new(CardValue::Three, Suit::Clubs),
-            Card::new(CardValue::Nine, Suit::Clubs),
-            Card::new(CardValue::Ten, Suit::Clubs),
-            Card::new(CardValue::Five, Suit::Clubs),
+            Card::new(Rank::Two, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Clubs),
+            Card::new(Rank::Nine, Suit::Clubs),
+            Card::new(Rank::Ten, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Clubs),
         ]);
 
         assert_that!(flush1, equal_to(Tier::Flush(Suit::Hearts)));
@@ -342,50 +342,50 @@ mod tests {
     #[test]
     fn test_full_house() {
         let full_house: Tier = Tier::based_on([
-            Card::new(CardValue::Jack, Suit::Hearts),
-            Card::new(CardValue::Nine, Suit::Spades),
-            Card::new(CardValue::Nine, Suit::Clubs),
-            Card::new(CardValue::Jack, Suit::Clubs),
-            Card::new(CardValue::Nine, Suit::Diamonds),
+            Card::new(Rank::Jack, Suit::Hearts),
+            Card::new(Rank::Nine, Suit::Spades),
+            Card::new(Rank::Nine, Suit::Clubs),
+            Card::new(Rank::Jack, Suit::Clubs),
+            Card::new(Rank::Nine, Suit::Diamonds),
         ]);
 
         assert_that!(
             full_house,
-            equal_to(Tier::FullHouse(CardValue::Nine, CardValue::Jack))
+            equal_to(Tier::FullHouse(Rank::Nine, Rank::Jack))
         );
     }
 
     #[test]
     fn test_four_of_a_kind() {
         let four_aces: Tier = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::Ace, Suit::Hearts),
-            Card::new(CardValue::Ace, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Ace, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Hearts),
         ]);
 
-        assert_that!(four_aces, is(equal_to(Tier::FourOfAKind(CardValue::Ace))));
+        assert_that!(four_aces, is(equal_to(Tier::FourOfAKind(Rank::Ace))));
     }
 
     #[test]
     fn test_straight_flush() {
         let straight_flush = Tier::based_on([
-            Card::new(CardValue::Five, Suit::Clubs),
-            Card::new(CardValue::Seven, Suit::Clubs),
-            Card::new(CardValue::Nine, Suit::Clubs),
-            Card::new(CardValue::Six, Suit::Clubs),
-            Card::new(CardValue::Eight, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Clubs),
+            Card::new(Rank::Seven, Suit::Clubs),
+            Card::new(Rank::Nine, Suit::Clubs),
+            Card::new(Rank::Six, Suit::Clubs),
+            Card::new(Rank::Eight, Suit::Clubs),
         ]);
 
         assert_that!(
             straight_flush,
             is(equal_to(Tier::StraightFlush(
-                Card::new(CardValue::Five, Suit::Clubs),
-                Card::new(CardValue::Six, Suit::Clubs),
-                Card::new(CardValue::Seven, Suit::Clubs),
-                Card::new(CardValue::Eight, Suit::Clubs),
-                Card::new(CardValue::Nine, Suit::Clubs),
+                Card::new(Rank::Five, Suit::Clubs),
+                Card::new(Rank::Six, Suit::Clubs),
+                Card::new(Rank::Seven, Suit::Clubs),
+                Card::new(Rank::Eight, Suit::Clubs),
+                Card::new(Rank::Nine, Suit::Clubs),
             )))
         );
     }
@@ -393,21 +393,21 @@ mod tests {
     #[test]
     fn test_low_ace_straight_flush() {
         let straight_flush = Tier::based_on([
-            Card::new(CardValue::Five, Suit::Diamonds),
-            Card::new(CardValue::Two, Suit::Diamonds),
-            Card::new(CardValue::Ace, Suit::Diamonds),
-            Card::new(CardValue::Four, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Diamonds),
+            Card::new(Rank::Five, Suit::Diamonds),
+            Card::new(Rank::Two, Suit::Diamonds),
+            Card::new(Rank::Ace, Suit::Diamonds),
+            Card::new(Rank::Four, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Diamonds),
         ]);
 
         assert_that!(
             straight_flush,
             is(equal_to(Tier::StraightFlush(
-                Card::new(CardValue::Two, Suit::Diamonds),
-                Card::new(CardValue::Three, Suit::Diamonds),
-                Card::new(CardValue::Four, Suit::Diamonds),
-                Card::new(CardValue::Five, Suit::Diamonds),
-                Card::new(CardValue::Ace, Suit::Diamonds),
+                Card::new(Rank::Two, Suit::Diamonds),
+                Card::new(Rank::Three, Suit::Diamonds),
+                Card::new(Rank::Four, Suit::Diamonds),
+                Card::new(Rank::Five, Suit::Diamonds),
+                Card::new(Rank::Ace, Suit::Diamonds),
             )))
         );
     }
@@ -415,21 +415,21 @@ mod tests {
     #[test]
     fn test_royal_flush() {
         let royal_flush = Tier::based_on([
-            Card::new(CardValue::Ace, Suit::Clubs),
-            Card::new(CardValue::King, Suit::Clubs),
-            Card::new(CardValue::Queen, Suit::Clubs),
-            Card::new(CardValue::Jack, Suit::Clubs),
-            Card::new(CardValue::Ten, Suit::Clubs),
+            Card::new(Rank::Ace, Suit::Clubs),
+            Card::new(Rank::King, Suit::Clubs),
+            Card::new(Rank::Queen, Suit::Clubs),
+            Card::new(Rank::Jack, Suit::Clubs),
+            Card::new(Rank::Ten, Suit::Clubs),
         ]);
 
         assert_that!(
             royal_flush,
             is(equal_to(Tier::RoyalFlush(
-                Card::new(CardValue::Ten, Suit::Clubs),
-                Card::new(CardValue::Jack, Suit::Clubs),
-                Card::new(CardValue::Queen, Suit::Clubs),
-                Card::new(CardValue::King, Suit::Clubs),
-                Card::new(CardValue::Ace, Suit::Clubs),
+                Card::new(Rank::Ten, Suit::Clubs),
+                Card::new(Rank::Jack, Suit::Clubs),
+                Card::new(Rank::Queen, Suit::Clubs),
+                Card::new(Rank::King, Suit::Clubs),
+                Card::new(Rank::Ace, Suit::Clubs),
             )))
         );
     }
@@ -437,135 +437,169 @@ mod tests {
     #[test]
     fn test_any_hand() {
         let hand_1 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::Ace, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Three, Suit::Clubs),
-            Card::new(CardValue::Three, Suit::Hearts),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::Ace, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Three, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Hearts),
         ]);
 
         let hand_2 = Tier::based_on([
-            Card::new(CardValue::Jack, Suit::Diamonds),
-            Card::new(CardValue::Queen, Suit::Diamonds),
-            Card::new(CardValue::Jack, Suit::Spades),
-            Card::new(CardValue::Jack, Suit::Clubs),
-            Card::new(CardValue::Queen, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Diamonds),
+            Card::new(Rank::Queen, Suit::Diamonds),
+            Card::new(Rank::Jack, Suit::Spades),
+            Card::new(Rank::Jack, Suit::Clubs),
+            Card::new(Rank::Queen, Suit::Hearts),
         ]);
 
         let hand_3 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Diamonds),
-            Card::new(CardValue::Seven, Suit::Diamonds),
-            Card::new(CardValue::Six, Suit::Spades),
-            Card::new(CardValue::Four, Suit::Clubs),
-            Card::new(CardValue::Five, Suit::Hearts),
+            Card::new(Rank::Three, Suit::Diamonds),
+            Card::new(Rank::Seven, Suit::Diamonds),
+            Card::new(Rank::Six, Suit::Spades),
+            Card::new(Rank::Four, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Hearts),
         ]);
 
         let hand_4 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Seven, Suit::Spades),
-            Card::new(CardValue::Six, Suit::Spades),
-            Card::new(CardValue::Four, Suit::Spades),
-            Card::new(CardValue::Five, Suit::Spades),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Seven, Suit::Spades),
+            Card::new(Rank::Six, Suit::Spades),
+            Card::new(Rank::Four, Suit::Spades),
+            Card::new(Rank::Five, Suit::Spades),
         ]);
 
         let hand_5 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Three, Suit::Hearts),
-            Card::new(CardValue::Jack, Suit::Spades),
-            Card::new(CardValue::Jack, Suit::Diamonds),
-            Card::new(CardValue::Three, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Three, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Spades),
+            Card::new(Rank::Jack, Suit::Diamonds),
+            Card::new(Rank::Three, Suit::Clubs),
         ]);
 
         let hand_6 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Three, Suit::Hearts),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::King, Suit::Diamonds),
-            Card::new(CardValue::Ten, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Three, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::King, Suit::Diamonds),
+            Card::new(Rank::Ten, Suit::Clubs),
         ]);
 
         let hand_7 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Three, Suit::Hearts),
-            Card::new(CardValue::Ace, Suit::Spades),
-            Card::new(CardValue::King, Suit::Diamonds),
-            Card::new(CardValue::King, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Three, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::King, Suit::Diamonds),
+            Card::new(Rank::King, Suit::Clubs),
         ]);
 
         let hand_8 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Spades),
-            Card::new(CardValue::Queen, Suit::Hearts),
-            Card::new(CardValue::Ten, Suit::Spades),
-            Card::new(CardValue::Seven, Suit::Diamonds),
-            Card::new(CardValue::Six, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Spades),
+            Card::new(Rank::Queen, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Spades),
+            Card::new(Rank::Seven, Suit::Diamonds),
+            Card::new(Rank::Six, Suit::Clubs),
         ]);
 
         let hand_9 = Tier::based_on([
-            Card::new(CardValue::Three, Suit::Clubs),
-            Card::new(CardValue::Queen, Suit::Clubs),
-            Card::new(CardValue::Ten, Suit::Clubs),
-            Card::new(CardValue::Seven, Suit::Clubs),
-            Card::new(CardValue::Six, Suit::Clubs),
+            Card::new(Rank::Three, Suit::Clubs),
+            Card::new(Rank::Queen, Suit::Clubs),
+            Card::new(Rank::Ten, Suit::Clubs),
+            Card::new(Rank::Seven, Suit::Clubs),
+            Card::new(Rank::Six, Suit::Clubs),
         ]);
 
         let hand_10 = Tier::based_on([
-            Card::new(CardValue::Seven, Suit::Hearts),
-            Card::new(CardValue::Queen, Suit::Clubs),
-            Card::new(CardValue::Seven, Suit::Spades),
-            Card::new(CardValue::Seven, Suit::Clubs),
-            Card::new(CardValue::Six, Suit::Diamonds),
+            Card::new(Rank::Seven, Suit::Hearts),
+            Card::new(Rank::Queen, Suit::Clubs),
+            Card::new(Rank::Seven, Suit::Spades),
+            Card::new(Rank::Seven, Suit::Clubs),
+            Card::new(Rank::Six, Suit::Diamonds),
         ]);
 
         let hand_11 = Tier::based_on([
-            Card::new(CardValue::Ten, Suit::Hearts),
-            Card::new(CardValue::Jack, Suit::Hearts),
-            Card::new(CardValue::Queen, Suit::Hearts),
-            Card::new(CardValue::King, Suit::Hearts),
-            Card::new(CardValue::Ace, Suit::Hearts),
+            Card::new(Rank::Ten, Suit::Hearts),
+            Card::new(Rank::Jack, Suit::Hearts),
+            Card::new(Rank::Queen, Suit::Hearts),
+            Card::new(Rank::King, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Hearts),
         ]);
 
-        assert_that!(hand_1, equal_to(Tier::FourOfAKind(CardValue::Three)));
+        let hand_12 = Tier::based_on([
+            Card::new(Rank::Queen, Suit::Hearts),
+            Card::new(Rank::Queen, Suit::Diamonds),
+            Card::new(Rank::Jack, Suit::Spades),
+            Card::new(Rank::King, Suit::Spades),
+            Card::new(Rank::Ten, Suit::Spades),
+        ]);
+
+        let hand_13 = Tier::based_on([
+            Card::new(Rank::Jack, Suit::Diamonds),
+            Card::new(Rank::Seven, Suit::Clubs),
+            Card::new(Rank::Five, Suit::Spades),
+            Card::new(Rank::Seven, Suit::Hearts),
+            Card::new(Rank::Ace, Suit::Clubs),
+        ]);
+
+        let hand_14 = Tier::based_on([
+            Card::new(Rank::Nine, Suit::Hearts),
+            Card::new(Rank::Queen, Suit::Spades),
+            Card::new(Rank::Ace, Suit::Spades),
+            Card::new(Rank::Five, Suit::Clubs),
+            Card::new(Rank::Eight, Suit::Diamonds),
+        ]);
+
+        assert_that!(hand_1, equal_to(Tier::FourOfAKind(Rank::Three)));
         assert_that!(
             hand_2,
-            equal_to(Tier::FullHouse(CardValue::Jack, CardValue::Queen))
+            equal_to(Tier::FullHouse(Rank::Jack, Rank::Queen))
         );
         assert_that!(
             hand_3,
             equal_to(Tier::Straight(
-                CardValue::Three,
-                CardValue::Four,
-                CardValue::Five,
-                CardValue::Six,
-                CardValue::Seven
+                Rank::Three,
+                Rank::Four,
+                Rank::Five,
+                Rank::Six,
+                Rank::Seven
             ))
         );
 
         assert_that!(
             hand_4,
             equal_to(Tier::StraightFlush(
-                Card::new(CardValue::Three, Suit::Spades),
-                Card::new(CardValue::Four, Suit::Spades),
-                Card::new(CardValue::Five, Suit::Spades),
-                Card::new(CardValue::Six, Suit::Spades),
-                Card::new(CardValue::Seven, Suit::Spades)
+                Card::new(Rank::Three, Suit::Spades),
+                Card::new(Rank::Four, Suit::Spades),
+                Card::new(Rank::Five, Suit::Spades),
+                Card::new(Rank::Six, Suit::Spades),
+                Card::new(Rank::Seven, Suit::Spades)
             ))
         );
 
-        assert_that!(hand_5, equal_to(Tier::FullHouse(CardValue::Three, CardValue::Jack)));
-        assert_that!(hand_6, equal_to(Tier::OnePair(CardValue::Three)));
-        assert_that!(hand_7, equal_to(Tier::TwoPair(CardValue::Three, CardValue::King)));
-        assert_that!(hand_8, equal_to(Tier::HighCard(CardValue::Queen)));
+        assert_that!(
+            hand_5,
+            equal_to(Tier::FullHouse(Rank::Three, Rank::Jack))
+        );
+        assert_that!(hand_6, equal_to(Tier::OnePair(Rank::Three)));
+        assert_that!(
+            hand_7,
+            equal_to(Tier::TwoPair(Rank::Three, Rank::King))
+        );
+        assert_that!(hand_8, equal_to(Tier::HighCard(Rank::Queen)));
         assert_that!(hand_9, equal_to(Tier::Flush(Suit::Clubs)));
-        assert_that!(hand_10, equal_to(Tier::ThreeOfAKind(CardValue::Seven)));
+        assert_that!(hand_10, equal_to(Tier::ThreeOfAKind(Rank::Seven)));
         assert_that!(
             hand_11,
             is(equal_to(Tier::RoyalFlush(
-                Card::new(CardValue::Ten, Suit::Hearts),
-                Card::new(CardValue::Jack, Suit::Hearts),
-                Card::new(CardValue::Queen, Suit::Hearts),
-                Card::new(CardValue::King, Suit::Hearts),
-                Card::new(CardValue::Ace, Suit::Hearts),
+                Card::new(Rank::Ten, Suit::Hearts),
+                Card::new(Rank::Jack, Suit::Hearts),
+                Card::new(Rank::Queen, Suit::Hearts),
+                Card::new(Rank::King, Suit::Hearts),
+                Card::new(Rank::Ace, Suit::Hearts),
             )))
         );
+
+        assert_that!(hand_12, equal_to(Tier::OnePair(Rank::Queen)));
+        assert_that!(hand_13, equal_to(Tier::OnePair(Rank::Seven)));
+        assert_that!(hand_14, equal_to(Tier::HighCard(Rank::Ace)));
     }
 }
