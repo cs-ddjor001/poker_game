@@ -1,4 +1,6 @@
-use crate::deck::Card;
+use crate::deck::{Card, Rank, Suit};
+use std::fmt;
+
 pub struct Player<'a> {
     pub name: &'a str,
     pub chips: u32,
@@ -20,16 +22,18 @@ impl<'a> Player<'a> {
         }
     }
 
-    pub fn recieve_card(&mut self, card: Card) {
-        self.hand.push(card)
+    pub fn receive_card(&mut self, card: Card) {
+        self.hand.push(card);
     }
 
     pub fn raise(&mut self, amount: u32) {
-        self.chips -= amount
+        if self.chips >= amount {
+            self.chips -= amount;
+        }
     }
 
     pub fn fold(&mut self) {
-        self.is_playing = false
+        self.is_playing = false;
     }
 
     pub fn small_blind(&mut self) {
@@ -41,94 +45,113 @@ impl<'a> Player<'a> {
         self.is_big_blind = true;
         self.raise(50);
     }
+
+    pub fn clear_hand(&mut self) {
+        self.hand.clear();
+    }
+
+    pub fn get_hand_value(&self) -> Vec<Rank> {
+        self.hand.iter().map(|card| card.get_value()).collect()
+    }
+
+    pub fn get_hand_suits(&self) -> Vec<Suit> {
+        self.hand.iter().map(|card| card.get_suit()).collect()
+    }
+
+    pub fn is_busted(&self) -> bool {
+        self.chips == 0
+    }
+}
+
+impl fmt::Display for Player<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} (Chips: {})", self.name, self.chips)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hamcrest2::prelude::*;
+    use crate::deck::Rank;
 
     #[test]
     fn test_player_new() {
-        let player = Player::new("Dusan", 20);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(20));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
+        let player = Player::new("Dusan", 100);
+        assert_eq!(player.name, "Dusan");
+        assert_eq!(player.chips, 100);
+        assert!(player.is_playing);
+        assert!(!player.is_small_blind);
+        assert!(!player.is_big_blind);
+        assert_eq!(player.hand.len(), 0);
     }
 
     #[test]
-    fn test_recieve_card() {
-        let mut player = Player::new("Dusan", 20);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(20));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
-        let card1 = Card::new(crate::deck::Rank::Queen, crate::deck::Suit::Clubs);
-        let card2 = Card::new(crate::deck::Rank::Jack, crate::deck::Suit::Hearts);
-        player.recieve_card(card1);
-        player.recieve_card(card2);
-        assert_that!(player.hand.is_empty(), is(false));
-        assert_that!(player.hand.len(), equal_to(2));
-        assert_that!(player.hand.contains(&card1), is(true));
-        assert_that!(player.hand.contains(&card2), is(true));
+    fn test_receive_card() {
+        let mut player = Player::new("Dusan", 100);
+        let card = Card::new(Rank::Ace, Suit::Spades);
+        player.receive_card(card);
+        assert_eq!(player.hand.len(), 1);
+        assert_eq!(player.hand[0], card);
     }
 
     #[test]
     fn test_raise() {
-        let mut player = Player::new("Dusan", 20);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(20));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
-        player.raise(10);
-        assert_that!(player.chips, equal_to(10));
+        let mut player = Player::new("Dusan", 100);
+        player.raise(30);
+        assert_eq!(player.chips, 70);
     }
 
     #[test]
     fn test_fold() {
-        let mut player = Player::new("Dusan", 20);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(20));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
+        let mut player = Player::new("Dusan", 100);
         player.fold();
-        assert_that!(player.is_playing, is(false));
+        assert!(!player.is_playing);
     }
 
     #[test]
     fn test_small_blind() {
         let mut player = Player::new("Dusan", 100);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(100));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
         player.small_blind();
-        assert_that!(player.is_small_blind, equal_to(true));
-        assert_that!(player.chips, equal_to(75));
+        assert!(player.is_small_blind);
+        assert_eq!(player.chips, 75);
     }
 
     #[test]
     fn test_big_blind() {
         let mut player = Player::new("Dusan", 100);
-        assert_that!(player.name, equal_to("Dusan"));
-        assert_that!(player.chips, equal_to(100));
-        assert_that!(player.is_playing, equal_to(true));
-        assert_that!(player.is_small_blind, equal_to(false));
-        assert_that!(player.is_big_blind, equal_to(false));
-        assert_that!(player.hand.len(), equal_to(0));
         player.big_blind();
-        assert_that!(player.is_big_blind, equal_to(true));
-        assert_that!(player.chips, equal_to(50));
+        assert!(player.is_big_blind);
+        assert_eq!(player.chips, 50);
+    }
+
+    #[test]
+    fn test_clear_hand() {
+        let mut player = Player::new("Dusan", 100);
+        let card1 = Card::new(Rank::Ace, Suit::Spades);
+        let card2 = Card::new(Rank::King, Suit::Hearts);
+        player.receive_card(card1);
+        player.receive_card(card2);
+        assert_eq!(player.hand.len(), 2);
+        player.clear_hand();
+        assert_eq!(player.hand.len(), 0);
+    }
+
+    #[test]
+    fn test_get_hand_value() {
+        let mut player = Player::new("Dusan", 100);
+        let card1 = Card::new(Rank::Ace, Suit::Spades);
+        let card2 = Card::new(Rank::King, Suit::Hearts);
+        player.receive_card(card1);
+        player.receive_card(card2);
+        let hand_values = player.get_hand_value();
+        assert_eq!(hand_values, vec![Rank::Ace, Rank::King]);
+    }
+
+    #[test]
+    fn test_is_busted() {
+        let mut player = Player::new("Dusan", 100);
+        assert!(!player.is_busted());
+        player.raise(100);
+        assert!(player.is_busted());
     }
 }
