@@ -51,7 +51,7 @@ impl<'a> Player<'a> {
     }
 
     pub fn get_hand_value(&self) -> Vec<Rank> {
-        self.hand.iter().map(|card| card.get_value()).collect()
+        self.hand.iter().map(|card| card.get_rank()).collect()
     }
 
     pub fn get_hand_suits(&self) -> Vec<Suit> {

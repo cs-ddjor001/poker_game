@@ -1,7 +1,28 @@
 use itertools::Itertools;
-use poker_game::deck::Suit;
 use poker_game::deck::{Card, Deck};
 use poker_game::hand_eval::Tier;
+use std::cmp::Ordering;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BestHand {
+    pub tier: Tier,
+    pub cards: [Card; 5],
+}
+
+impl Ord for BestHand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.tier.cmp(&other.tier) {
+            Ordering::Equal => self.cards.cmp(&other.cards),
+            other => other,
+        }
+    }
+}
+
+impl PartialOrd for BestHand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 fn main() {
     let mut deck = Deck::new();
@@ -20,7 +41,7 @@ fn main() {
             .collect::<Vec<_>>()
             .join(", ")
     );
-    println!("");
+    println!();
     println!(
         "Player 2's cards: [{}]",
         player2_hand
@@ -29,7 +50,7 @@ fn main() {
             .collect::<Vec<_>>()
             .join(", ")
     );
-    println!("");
+    println!();
     println!(
         "Community cards: [{}]",
         community_cards
@@ -38,82 +59,115 @@ fn main() {
             .collect::<Vec<_>>()
             .join(", ")
     );
-    println!("");
-    println!("Evaluating best hands...");
-    println!("");
+    println!();
+    println!("Evaluating best hands...\n");
 
     let player1_best_hand = evaluate_best_hand(&player1_hand, &community_cards);
+    let player1_best_tier = player1_best_hand.tier;
+    let player1_best_hand_cards = player1_best_hand.cards;
+
     let player2_best_hand = evaluate_best_hand(&player2_hand, &community_cards);
+    let player2_best_tier = player2_best_hand.tier;
+    let player2_best_hand_cards = player2_best_hand.cards;
 
-    println!("Player 1's best hand: {}", player1_best_hand);
-    println!("");
-    println!("Player 2's best hand: {}", player2_best_hand);
-    println!("");
-    println!("Comparing hands...");
-    println!("");
+    println!(
+        "Player 1's best hand: {} with [{}]",
+        player1_best_tier,
+        player1_best_hand_cards
+            .iter()
+            .map(|c| c.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    println!();
+    println!(
+        "Player 2's best hand: {} with [{}]",
+        player2_best_tier,
+        player2_best_hand_cards
+            .iter()
+            .map(|c| c.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    println!("\nComparing hands...\n");
 
-    match player1_best_hand.cmp(&player2_best_hand) {
+    match player1_best_tier.cmp(&player2_best_tier) {
         std::cmp::Ordering::Greater => {
-            println!("Player 1 wins with {}!", player1_best_hand);
+            println!(
+                "Player 1 wins with {} [{}]!",
+                player1_best_tier,
+                player1_best_hand_cards
+                    .iter()
+                    .map(|c| c.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
         }
         std::cmp::Ordering::Less => {
-            println!("Player 2 wins with {}!", player2_best_hand);
+            println!(
+                "Player 2 wins with {} [{}]!",
+                player2_best_tier,
+                player2_best_hand_cards
+                    .iter()
+                    .map(|c| c.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
         }
-        std::cmp::Ordering::Equal => {
-            let player1_high_card = get_high_card(&player1_best_hand);
-            let player2_high_card = get_high_card(&player2_best_hand);
-
-            match player1_high_card.cmp(&player2_high_card) {
-                std::cmp::Ordering::Greater => {
-                    println!(
-                        "Player 1 wins with {} (high card: {})!",
-                        player1_best_hand, player1_high_card
-                    );
-                }
-                std::cmp::Ordering::Less => {
-                    println!(
-                        "Player 2 wins with {} (high card: {})!",
-                        player2_best_hand, player2_high_card
-                    );
-                }
-                std::cmp::Ordering::Equal => {
-                    println!("It's a complete tie!");
-                }
+        std::cmp::Ordering::Equal => match player1_best_hand_cards.cmp(&player2_best_hand_cards) {
+            std::cmp::Ordering::Greater => {
+                println!(
+                    "Player 1 wins with {} [{}] (better kickers)!",
+                    player1_best_tier,
+                    player1_best_hand_cards
+                        .iter()
+                        .map(|c| c.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
             }
-        }
+            std::cmp::Ordering::Less => {
+                println!(
+                    "Player 2 wins with {} [{}] (better kickers)!",
+                    player2_best_tier,
+                    player2_best_hand_cards
+                        .iter()
+                        .map(|c| c.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            }
+            std::cmp::Ordering::Equal => {
+                println!(
+                    "It's a complete tie! Both hands: [{}]",
+                    player1_best_hand_cards
+                        .iter()
+                        .map(|c| c.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            }
+        },
     }
 }
 
-fn evaluate_best_hand(player_cards: &[Card], community_cards: &[Card]) -> Tier {
-    let mut best_tier = None;
-
+pub fn evaluate_best_hand(player_cards: &[Card], community_cards: &[Card]) -> BestHand {
     let all_cards = [player_cards, community_cards].concat();
+    let mut best_hand: Option<BestHand> = None;
 
-    let combinations = all_cards.iter().cloned().combinations(5);
-
-    for combo in combinations {
-        let hand_array: [Card; 5] = combo.try_into().expect("Combination should have 5 cards");
+    for combo in all_cards.iter().cloned().combinations(5) {
+        let hand_array: [Card; 5] = combo.try_into().unwrap();
         let tier = Tier::evaluate_hand(hand_array);
 
-        if best_tier.is_none() || tier > best_tier.unwrap() {
-            best_tier = Some(tier);
+        let current = BestHand {
+            tier,
+            cards: hand_array,
+        };
+
+        if best_hand.as_ref().map_or(true, |best| current > *best) {
+            best_hand = Some(current);
         }
     }
 
-    best_tier.expect("There should always be a best hand")
-}
-
-fn get_high_card(tier: &Tier) -> Card {
-    match tier {
-        Tier::HighCard(rank) => Card::new(*rank, Suit::Spades),
-        Tier::OnePair(rank) => Card::new(*rank, Suit::Spades),
-        Tier::TwoPair(high, _) => Card::new(*high, Suit::Spades),
-        Tier::ThreeOfAKind(rank) => Card::new(*rank, Suit::Spades),
-        Tier::Straight(high, ..) => Card::new(*high, Suit::Spades),
-        Tier::Flush(_) => panic!("Flush tie-breaking logic not implemented"),
-        Tier::FullHouse(three, _) => Card::new(*three, Suit::Spades),
-        Tier::FourOfAKind(rank) => Card::new(*rank, Suit::Spades),
-        Tier::StraightFlush(high, ..) => Card::new(high.get_value(), Suit::Spades),
-        Tier::RoyalFlush(_, _, _, _, high) => *high,
-    }
+    best_hand.expect("There should always be a best hand")
 }

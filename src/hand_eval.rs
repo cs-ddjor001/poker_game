@@ -25,7 +25,7 @@ impl Tier {
             [Rank::Two, Rank::Three, Rank::Four, Rank::Five, Rank::Ace];
 
         for card in hand.iter() {
-            *card_counts.entry(card.get_value()).or_insert(0) += 1;
+            *card_counts.entry(card.get_rank()).or_insert(0) += 1;
             *suit_counts.entry(card.get_suit()).or_insert(0) += 1;
         }
 
@@ -101,7 +101,7 @@ impl Tier {
                 return Tier::RoyalFlush(cards[0], cards[1], cards[2], cards[3], cards[4]);
             }
 
-            if cards[4].get_value() as u8 - cards[0].get_value() as u8 == 4 {
+            if cards[4].get_rank() as u8 - cards[0].get_rank() as u8 == 4 {
                 return Tier::StraightFlush(cards[0], cards[1], cards[2], cards[3], cards[4]);
             }
         }

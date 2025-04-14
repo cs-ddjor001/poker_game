@@ -89,7 +89,7 @@ impl Card {
         Card { rank, suit }
     }
 
-    pub fn get_value(&self) -> Rank {
+    pub fn get_rank(&self) -> Rank {
         self.rank
     }
 
