@@ -1,5 +1,62 @@
-I decided that for my Rust project I will implement a traditional game of Poker (Texas Hold'em if you prefer) and its core mechanics. The game will use a standard 52 card deck, which will be shuffled at the start of each round. The dealer will begin by dealing cards to the left, with each player receiving one card per turn until they each have two cards. The player to the dealer's left will be the Small Blind, while the second player to the left will be the Big Blind. The Small Blind and Big Blind pay a fixed, pre-determined bet before the game begins, that way each round is guarenteed to have money on the table, and the remaining players have to match the bet of the Big Blind in order to stay in the game. The Small Blind will put 25 cents, and the Big Blind 50 cents. Turns will progress clockwise, starting with the player after the Big Blind. The game will include the standard betting actions: folding, checking, and raising, with betting rounds occurring before the flop, after the flop (the first three community cards), after the turn (fourth card), and after the river (fifth card). Community cards will be revealed following poker rules, where the top card is burned before revealing the flop, the turn, and the river. At the showdown, remaining players will reveal their hands, and the winner will be determined using a tier system for hand rankings, from High Card to Royal Flush.
+# Texas Hold'em Poker Game in Rust
 
-That's kind of the main things I want to implement and get done. I have some ideas that, time permitting, I will try to implement as well. Some of these include playing with multiple players, AI (for those who don't have any friends :( ), and also maybe creating a GUI.  I will also try to implement FFI to intergrate Rust with Python, though I will have to look into how to do that, and what it can be used for.
+## Overview
 
-So yeah, that's what I'm hoping to achieve. I got this idea becasue I only recently learned to play poker, and by recently I mean this past Friday, and it was hell fun. Though, I did lose some money :(. Who knows, maybe I'll make that a feature too. 
+This project is a command-line implementation of **Texas Hold'em Poker** written in **Rust**, featuring core game mechanics such as:
+
+- Card dealing and community card reveal
+- Hand evaluation using standard poker rules
+- Accurate winner determination and tie-breaking using kickers
+- Expressive debug output showing best hands and evaluation steps
+
+The project was designed to deepen my understanding of Rust, especially around enums, pattern matching, and idiomatic code architecture. It’s currently a two-player simulation, but the logic is extensible for multiplayer or AI opponents.
+
+---
+
+## Dependencies
+
+Listed in `Cargo.toml`:
+
+- [`rand`](https://crates.io/crates/rand) – For shuffling the deck
+- [`itertools`](https://crates.io/crates/itertools) – For generating 5-card combinations
+- ['hamcrest2'](https://crates.io/crates/hamcrest2) - For testing the implementation code
+
+---
+
+## Changes Made During the Semester
+
+- Refactored `deck.rs` into `card.rs` for clarity
+- Built a `Tier` enum to represent all poker hand types
+- Implemented `evaluate_best_hand()` to find the best 5-card hand from a 7-card set
+- Fixed edge-case bugs in Two Pair and One Pair tie-breaker scenarios
+- Added debug printing for best hands used in comparisons
+- Implemented `Display` for clean output of cards and hand types
+
+---
+
+## Lessons Learned
+
+- **Hand Evaluation Is Harder Than It Looks**: Managing edge cases like kickers and choosing the best hand among all 21 combinations was a great exercise in logic and testing.
+- **Rust’s Type System Is Powerful**: Enums and pattern matching made the hand evaluation logic clean, safe, and expressive.
+- **Tests Are Your Friend**: Creating test cases for each poker tier saved me from countless bugs and regressions.
+- **Print Debugging Works**: Outputting the selected 5-card hands helped verify hand evaluation visually and catch subtle issues.
+
+---
+
+## What I’d Do with One More Month
+
+If given more time, I'd expand the project in the following ways:
+
+- Add **AI Opponents** with simple betting heuristics
+- Build a **graphical interface** using a crate like [`ggez`](https://crates.io/crates/ggez) or [`bevy`](https://bevyengine.org)
+- Add **multiplayer support** via TCP/WebSockets
+- Implement a **hand history logger** tp keep track of the best hand in the player's history.
+- Improve user interaction with input prompts and betting logic
+
+---
+
+Thanks for checking out the project! This was a fun and challenging way to explore Rust’s strengths while building something game-related and logic-heavy.
+
+Feel free to fork, test, or build upon this code!
+
+---
