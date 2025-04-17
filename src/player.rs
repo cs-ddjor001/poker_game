@@ -1,4 +1,4 @@
-use crate::deck::{Card, Rank, Suit};
+use crate::card::{Card, Rank, Suit};
 use std::fmt;
 
 pub struct Player<'a> {
@@ -72,7 +72,7 @@ impl fmt::Display for Player<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deck::Rank;
+    use crate::card::Rank;
 
     #[test]
     fn test_player_new() {

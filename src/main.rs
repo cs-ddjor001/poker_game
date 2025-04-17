@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use poker_game::deck::{Card, Deck};
+use poker_game::card::{Card, Deck};
 use poker_game::hand_eval::Tier;
 use std::cmp::Ordering;
 

@@ -1,4 +1,4 @@
-use crate::deck::{Card, Rank, Suit};
+use crate::card::{Card, Rank, Suit};
 use std::collections::HashMap;
 use std::fmt;
 
