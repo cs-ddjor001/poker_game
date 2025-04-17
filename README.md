@@ -13,13 +13,51 @@ The project was designed to deepen my understanding of Rust, especially around e
 
 ---
 
+## How To Run The Program
+
+The project doesn't expect any command line parameters and no interaction from the user at the moment. 
+
+- Use ``` cargo run ``` to run the program from the command line.
+- Use ``` cargo test ``` to run all the tests and display the results.
+
+---
+
+## Sample Program Output 
+
+The project compares the hands between two players and determines a winner, or declares a tie of no winner is possible. At the start of the program, a deck of 52 cards is shuffled, after which 2 cards are dealt to player 1 and player 2 respetively. Following that, 5 community cards are revealed at the table, and the program determines the best possible hand for each player, from their 2 cards, and the 5 community cards. Each player's best hand is displayed to the terminal. Finally, the players hands are compared and a winner is declared, or a tie if the player's hands are the same.
+
+A sample output from running ``` cargo run ```:
+
+```
+
+Player 1's cards: [7♣, Q♦]
+
+Player 2's cards: [J♠, 6♥]
+
+Community cards: [10♥, 4♣, K♠, 8♠, 6♠]
+
+Evaluating best hands...
+
+Player 1's best hand: High Card(K) with [Q♦, 10♥, K♠, 8♠, 7♣]
+
+Player 2's best hand: One Pair(6) with [J♠, 6♥, K♠, 10♥, 6♠]
+
+Comparing hands...
+
+Player 2 wins with One Pair(6) [J♠, 6♥, K♠, 10♥, 6♠]!
+
+
+```
+
+---
+
 ## Dependencies
 
 Listed in `Cargo.toml`:
 
 - [`rand`](https://crates.io/crates/rand) – For shuffling the deck
 - [`itertools`](https://crates.io/crates/itertools) – For generating 5-card combinations
-- ['hamcrest2'](https://crates.io/crates/hamcrest2) - For testing the implementation code
+- [`hamcrest2`](https://crates.io/crates/hamcrest2) - For testing the implementation code
 
 ---
 
@@ -55,8 +93,6 @@ If given more time, I'd expand the project in the following ways:
 
 ---
 
-Thanks for checking out the project! This was a fun and challenging way to explore Rust’s strengths while building something game-related and logic-heavy.
-
-Feel free to fork, test, or build upon this code!
+This project was hard :(.
 
 ---
