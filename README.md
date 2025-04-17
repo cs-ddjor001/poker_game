@@ -4,10 +4,10 @@
 
 This project is a command-line implementation of **Texas Hold'em Poker** written in **Rust**, featuring core game mechanics such as:
 
-- Card dealing and community card reveal
-- Hand evaluation using standard poker rules
-- Accurate winner determination and tie-breaking using kickers
-- Expressive debug output showing best hands and evaluation steps
+- Card dealing and community card reveal.
+- Hand evaluation using standard poker rules.
+- Accurate winner determination and tie-breaking using kickers.
+- Expressive debug output showing best hands and evaluation steps.
 
 The project was designed to deepen my understanding of Rust, especially around enums, pattern matching, and idiomatic code architecture. It’s currently a two-player simulation, but the logic is extensible for multiplayer or AI opponents.
 
@@ -55,20 +55,20 @@ Player 2 wins with One Pair(6) [J♠, 6♥, K♠, 10♥, 6♠]!
 
 Listed in `Cargo.toml`:
 
-- [`rand`](https://crates.io/crates/rand) – For shuffling the deck
-- [`itertools`](https://crates.io/crates/itertools) – For generating 5-card combinations
-- [`hamcrest2`](https://crates.io/crates/hamcrest2) - For testing the implementation code
+- [`rand`](https://crates.io/crates/rand) – For shuffling the deck.
+- [`itertools`](https://crates.io/crates/itertools) – For generating 5-card combinations.
+- [`hamcrest2`](https://crates.io/crates/hamcrest2) - For testing the implementation code.
 
 ---
 
 ## Changes Made During the Semester
 
-- Refactored `deck.rs` into `card.rs` for clarity
-- Built a `Tier` enum to represent all poker hand types
-- Implemented `evaluate_best_hand()` to find the best 5-card hand from a 7-card set
-- Fixed edge-case bugs in Two Pair and One Pair tie-breaker scenarios
-- Added debug printing for best hands used in comparisons
-- Implemented `Display` for clean output of cards and hand types
+- Refactored `deck.rs` into `card.rs` for clarity.
+- Built a `Tier` enum to represent all poker hand types.
+- Implemented `evaluate_best_hand()` to find the best 5-card hand from a 7-card set.
+- Fixed edge-case bugs in Two Pair and One Pair tie-breaker scenarios.
+- Added debug printing for best hands used in comparisons.
+- Implemented `Display` for clean output of cards and hand types.
 
 ---
 
